@@ -3904,7 +3904,7 @@ let authSignup = false;
 function authSwitch(){
   authSignup = !authSignup;
   document.getElementById('authTitle').textContent = authSignup ? 'Registrace' : 'Přihlášení';
-  document.getElementById('authLead').textContent = authSignup ? 'Vytvoř si účet e-mailem a heslem. Hned potom se dostaneš do katalogu.' : 'Přihlas se e-mailem a heslem. Nemáš účet? Vytvoř si ho, trvá to chvilku.';
+  document.getElementById('authLead').textContent = authSignup ? 'Zaregistruj se e-mailem, který Angie povolila (Gmail nebo školní). Pak ti přijde e-mail s potvrzením.' : 'Přihlas se e-mailem a heslem. Nemáš účet? Vytvoř si ho, trvá to chvilku.';
   document.getElementById('authGo').textContent = authSignup ? 'Vytvořit účet' : 'Přihlásit se';
   document.getElementById('authSwitch').textContent = authSignup ? 'Už mám účet, chci se přihlásit' : 'Nemám účet, chci se registrovat';
   document.getElementById('authPass').autocomplete = authSignup ? 'new-password' : 'current-password';
@@ -3917,6 +3917,7 @@ function authMsg(e){
   if(m.includes('at least') || m.includes('weak')) return 'Heslo musí mít aspoň 6 znaků.';
   if(m.includes('valid email') || m.includes('invalid email') || m.includes('unable to validate email')) return 'Zadej platný e-mail.';
   if(m.includes('rate') || m.includes('too many') || m.includes('security purposes')) return 'Moc pokusů, zkus to za chvíli.';
+  if(m.includes('database error saving') || m.includes('nema pristup')) return 'Tenhle e-mail nemá přístup. Použij e-mail, který Angie povolila (Gmail nebo školní).';
   if(m.includes('email not confirmed')) return 'Nejdřív potvrď e-mail (poslali jsme ti odkaz).';
   if(m.includes('failed to fetch') || m.includes('network')) return 'Bez připojení se nedá přihlásit.';
   return 'Nepovedlo se: ' + ((e && e.message) || 'neznámá chyba');
