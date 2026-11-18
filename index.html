@@ -1921,6 +1921,7 @@ function renderBmLog(){
         <div><label>Místnost</label><input id="bmNewRoom" placeholder="Např. Tichá místnost" /></div>
         <div><label>Do kdy dodat přípravu a harmonogram</label><input type="date" id="bmNewDeadline" /></div>
       </div>
+      <div class="bml-wide"><label>Cross z vyššího ročníku (povinné)</label><input id="bmNewCross" placeholder="Jméno crossu z vyššího ročníku" /></div>
       <div class="bml-wide"><label>Cíl BM</label><textarea id="bmNewGoal" placeholder="Čeho má BM dosáhnout, co si lidé odnesou..."></textarea></div>
       <div class="bml-wide"><label>Koncept</label><textarea id="bmNewConcept" placeholder="Stručný koncept: o čem to bude a jak to bude probíhat..."></textarea></div>
       <div class="bml-wide"><label>Harmonogram</label><textarea id="bmNewSchedule" placeholder="Např. 10:00 úvod, 10:15 prezentace, 11:00 praktická část..."></textarea></div>
@@ -2053,7 +2054,8 @@ function bmPlanHtml(){
       <div class="plan-topic">${ok ? '✓ <b>'+escapeHtml(x.b.topic)+'</b>' : '❗ <b>Téma musíme vymyslet</b>'}</div>
       <div class="plan-row"><span>Téma domluvit (týden, který je 2 týdny před BM)</span><b>ideálně ${dFmt(topicIdeal)}, nejpozději ${dFmt(topicDl)}</b>${planChip(topicDl, today, ok)}</div>
       <div class="plan-row"><span>Příprava a harmonogram poslat do</span><b>${prepDl ? dFmt(prepDl) : 'nenastaveno'}</b>${prepDl ? planChip(prepDl, today, false) : `<span class="plan-chip soon">doporučeno ${dFmt(prepSug)}</span>`}</div>
-      <div class="plan-act">${x.b ? `<button class="mini-btn" onclick="bmOpen.add('${x.b.id}');bmEdit.add('${x.b.id}');renderBmLog();">✎ Doplnit téma a přípravu</button>` : `<button class="mini-btn accent" onclick="bmPlanNew('${x.date}')">+ Naplánovat tento BM</button>`}</div>
+      <div class="plan-row"><span>Cross z vyššího ročníku (povinný)</span><b>${x.b && (x.b.cross||'').trim() ? escapeHtml(x.b.cross) : 'chybí'}</b>${x.b && (x.b.cross||'').trim() ? '<span class="plan-chip done">✓ hotovo</span>' : '<span class="plan-chip late">chybí cross</span>'}</div>
+      <div class="plan-act">${x.b ? `<button class="mini-btn" onclick="bmOpen.add('${x.b.id}');bmEdit.add('${x.b.id}');renderBmLog();">✎ Doplnit téma, cross a přípravu</button>` : `<button class="mini-btn accent" onclick="bmPlanNew('${x.date}')">+ Naplánovat tento BM</button>`}</div>
     </div>`;
   }).join('');
   return `<div class="plan-wrap">
@@ -2453,6 +2455,7 @@ function bmEditHtml(b, members, prepOpts, link){
           <div><label>Do kdy dodat přípravu a harmonogram</label><input type="date" value="${escapeAttr(b.deadline||'')}" onchange="bmSet('${b.id}','deadline',this.value)" /></div>
           <div><label>Kdy byla příprava poslána (pro statistiku „včas“)</label><input type="date" value="${escapeAttr(b.prepSentAt||'')}" onchange="bmSet('${b.id}','prepSentAt',this.value)" /></div>
         </div>
+        <div class="bml-wide"><label>Cross z vyššího ročníku (povinné)</label><input class="${(b.cross||'').trim()?'':'qa-bad'}" placeholder="Jméno crossu z vyššího ročníku" value="${escapeAttr(b.cross||'')}" onchange="bmSet('${b.id}','cross',this.value.trim())" />${(b.cross||'').trim()?'':'<div class="qa-msg">Cross z vyššího ročníku chybí, doplň ho prosím.</div>'}</div>
         <div class="bml-wide"><label>Cíl BM</label><textarea placeholder="Čeho má BM dosáhnout, co si lidé odnesou..." onchange="bmSet('${b.id}','goal',this.value.trim())">${escapeHtml(b.goal||'')}</textarea></div>
         <div class="bml-wide"><label>Koncept</label><textarea placeholder="Stručný koncept: o čem to bude a jak to bude probíhat..." onchange="bmSet('${b.id}','concept',this.value.trim())">${escapeHtml(b.concept||'')}</textarea></div>
         <div class="bml-wide"><label>Harmonogram</label><textarea placeholder="Např. 10:00 úvod, 10:15 prezentace, 11:00 praktická část..." onchange="bmSet('${b.id}','schedule',this.value.trim())">${escapeHtml(b.schedule||'')}</textarea></div>
@@ -2472,9 +2475,10 @@ function bmReadHtml(b, members, link){
   }).join('');
   const sched = (b.schedule||'').trim();
   const parkRow = b.status==='parked' ? `<div class="bml-parknote">🅿️ <b>BM na parkovišti.</b> Tým ho zrušil nebo přesunul na neurčito. ${b.parkReason ? '<b>Důvod:</b> '+escapeHtml(b.parkReason) : '<span style="color:#D8000E;font-weight:700;">Důvod chybí, doplň ho v Upravit.</span>'} Až se k němu vrátíme, podklady na něj čekají.</div>` : '';
-  const any = prepM || link || dl || b.goal || b.concept || sched || mats;
+  const any = (b.cross||'').trim() || prepM || link || dl || b.goal || b.concept || sched || mats;
   return `<div class="bml-read">
     ${parkRow}
+    ${row('Cross z vyššího ročníku', (b.cross||'').trim() ? escapeHtml(b.cross) : '<span style="color:#D8000E;font-weight:700;">Cross chybí, doplň ho v Upravit.</span>')}
     ${row('Předávatel know-how', prepM ? escapeHtml(prepM.name) : '')}
     ${row('Příprava (Notion)', link ? `<a class="bml-open" href="${escapeAttr(link)}" target="_blank" rel="noopener">Otevřít přípravu ↗</a>` : '')}
     ${row('Příprava a harmonogram dodat do', escapeHtml(dl))}
@@ -2500,11 +2504,11 @@ function bmAdd(){
   if(!Array.isArray(data.bmLog)) data.bmLog=[];
   data.bmLog.push({ id:uid(), date, topic, kind:document.getElementById('bmNewKind').value, prep:document.getElementById('bmNewPrep').value, link:document.getElementById('bmNewLink').value.trim(), present:{},
     time:document.getElementById('bmNewTime').value.trim(), room:document.getElementById('bmNewRoom').value.trim(), deadline:document.getElementById('bmNewDeadline').value,
-    goal:document.getElementById('bmNewGoal').value.trim(), concept:document.getElementById('bmNewConcept').value.trim(), schedule:document.getElementById('bmNewSchedule').value.trim() });
+    cross:document.getElementById('bmNewCross').value.trim(), goal:document.getElementById('bmNewGoal').value.trim(), concept:document.getElementById('bmNewConcept').value.trim(), schedule:document.getElementById('bmNewSchedule').value.trim() });
   bmFormOpen=false; bmLaterOpen=true; bmNewKindPref=''; bmNewDatePref=''; bmOpen.add(data.bmLog[data.bmLog.length-1].id); bmEdit.add(data.bmLog[data.bmLog.length-1].id); persist('BM přidáno'); renderBmLog();
 }
 function bmFind(id){ return (data.bmLog||[]).find(b=>b.id===id); }
-function bmSet(id,field,val){ const b=bmFind(id); if(!b) return; b[field]=val; persist(); if(field==='date'||field==='link'||field==='topic'||field==='kind'||field==='status') renderBmLog(); }
+function bmSet(id,field,val){ const b=bmFind(id); if(!b) return; b[field]=val; persist(); if(field==='date'||field==='link'||field==='topic'||field==='kind'||field==='status'||field==='cross') renderBmLog(); }
 async function bmSave(id,btn){
   if(!bmFind(id)) return;
   const old = btn ? btn.textContent : '';
