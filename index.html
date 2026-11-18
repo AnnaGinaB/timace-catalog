@@ -1992,14 +1992,14 @@ const BM_KINDS = {
   other:{label:'Jiné (tematické)',icon:'✨'}
 };
 const BM_TYPES = [
-  {key:'classic', name:'Classic BM', when:'čtvrtek 10:00 – max. 12:00 (záleží)', lead:'Project updates: každý řekne, jak na tom jeho projekt je.',
+  {key:'classic', name:'Classic BM', lead:'Project updates: každý řekne, jak na tom jeho projekt je.',
    goal:['sdílet aktuální stav projektů a reálné zkušenosti z jejich vývoje','získat zpětnou vazbu a nové pohledy od ostatních','odhalit slepá místa v projektech a najít konkrétní posuny'],
    prep:['Každý si připraví update svého projektu: co dělám, co se změnilo, co řeším teď.']},
-  {key:'knowhow', name:'Know-how sharing', when:'čtvrtek 10:00–12:00', lead:'Předáváme si skilly a zkušenosti z praxe i z projektů mimo Tiimi. Konečně si předáváme KNOW HOW!',
+  {key:'knowhow', name:'Know-how sharing', lead:'Předáváme si skilly a zkušenosti z praxe i z projektů mimo Tiimi. Konečně si předáváme KNOW HOW!',
    goal:['sdílet reálné zkušenosti z projektů mimo Tiimi a z naší praxe v minulosti, stejně jako naše skilly','ukázat konkrétní způsoby, jak věci dělat (ne jen teorie)','inspirovat ostatní k akci a předat tipy, které mohou ostatní hned využít','propojit lidi s podobnými zájmy a projekty'],
    point:'Hlavní pointa: odcházíš s něčím, co můžeš okamžitě použít, nebo alespoň víš, kde najít informace, které ti pomohou věc zvládnout: kde začít a kde získat potřebné know-how + tipy.',
    prep:['Potřebujeme cca 5 lidí, kteří budou ready předávat know-how. Každý může předávat jiný druh zkušeností a mít jiný styl předávání.','Kdo chce předávat, napíše BM manažerce téma nejpozději do pondělní půlnoci a zapíše se do tabulky (jméno / téma / průběh).','Všichni s sebou: notebook nebo tablet a learning diary.']},
-  {key:'mastermind', name:'BM Mastermind', when:'formát podle potřeby týmu', lead:'Strukturované řešení dvou problémů z jednoho nebo dvou projektů, předem připravené.',
+  {key:'mastermind', name:'BM Mastermind', lead:'Strukturované řešení dvou problémů z jednoho nebo dvou projektů, předem připravené.',
    goal:['společně vyřešit konkrétní problémy projektů'],
    schedule:[],
    prep:['Připrav předem dva problémy z jednoho nebo dvou projektů, které chceš s týmem řešit.']}
@@ -2312,7 +2312,7 @@ function bmTypesHtml(){
     const k = BM_KINDS[t.key];
     const sec = (h, inner)=> inner ? `<div class="bmt-h">${h}</div>${inner}` : '';
     return `<details class="bmt" ${bmTypeOpenKeys.has(t.key)?'open':''} ontoggle="bmTypeToggle('${t.key}',this.open)">
-      <summary><span class="bmt-name">${k.icon} ${escapeHtml(t.name)}</span><span class="bmt-when">${escapeHtml(t.when)}</span></summary>
+      <summary><span class="bmt-name">${k.icon} ${escapeHtml(t.name)}</span></summary>
       <div class="bmt-body">
         <div class="bmt-lead">${escapeHtml(t.lead)}</div>
         ${sec('Cíl', li(t.goal))}
