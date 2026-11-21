@@ -206,7 +206,7 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
     overflow:hidden;
   }
-  .new-badge{position:absolute;top:9px;right:10px;z-index:2;background:var(--red);color:#fff;font:700 11px 'Public Sans',sans-serif;letter-spacing:.02em;padding:3px 8px;border-radius:999px;box-shadow:0 2px 6px -2px rgba(0,0,0,.4);}
+  .new-badge{position:absolute;top:9px;right:10px;z-index:2;background:var(--red);color:#fff;font:700 11px 'Public Sans',sans-serif;letter-spacing:.02em;padding:3px 9px;border-radius:12px;text-align:right;line-height:1.35;box-shadow:0 2px 6px -2px rgba(0,0,0,.4);}
   .member-card:hover{transform:translateY(-4px) rotate(-0.6deg);box-shadow:0 16px 28px -14px rgba(17,17,17,0.4);}
   .member-card .corner{
     position:absolute;display:flex;flex-direction:column;align-items:center;line-height:1;
@@ -2533,24 +2533,36 @@ function seenKey(){ return 'tmc-seen-'+(viewer.id||'anon'); }
 function seenLoad(){ if(seenMap) return seenMap; try{ seenMap = JSON.parse(localStorage.getItem(seenKey())||'null'); }catch(e){ seenMap = null; } return seenMap; }
 function seenSave(){ try{ localStorage.setItem(seenKey(), JSON.stringify(seenMap)); }catch(e){} }
 function memSig(m){ const t = canon(m); let h = 5381; for(let i=0;i<t.length;i++) h = ((h<<5)+h+t.charCodeAt(i))|0; return String(h); }
+const NEW_KINDS = [['skills',['skill','skilly','skillů']],['resources',['zdroj','zdroje','zdrojů']],['works',['ukázka práce','ukázky práce','ukázek práce']],['steps',['krok','kroky','kroků']],['exp',['zkušenost','zkušenosti','zkušeností']],['interests',['zájem','zájmy','zájmů']]];
+function memCounts(m){
+  const sk = m.skills || [];
+  const sum = f => sk.reduce((a,k)=>a+((k[f]||[]).length),0);
+  return {skills:sk.length, resources:sum('resources'), works:sum('works'), steps:sum('steps'),
+    exp: sk.filter(k=>k.experience && String(k.experience).trim()).length + (statFilled(m.workExp)?1:0),
+    interests: Array.isArray(m.interests) ? m.interests.length : 0};
+}
+function plCz(n, f){ return n===1 ? f[0] : (n>=2 && n<=4 ? f[1] : f[2]); }
 function seenMark(slot){
   const m = data.members[slot]; if(!m || !m.name || !dbRef) return;
   if(!seenLoad()) seenMap = {};
-  seenMap[slot] = {sig:memSig(m), n:(m.skills||[]).length}; seenSave();
+  seenMap[slot] = {sig:memSig(m), c:memCounts(m)}; seenSave();
 }
 function newBadgeFor(slot){
   const m = data.members[slot]; if(!m || !m.name || !dbRef) return '';
   if(!seenLoad()){
     seenMap = {};
-    for(let i=1;i<=NUM_SLOTS;i++){ const x = data.members['slot'+i]; if(x && x.name) seenMap['slot'+i] = {sig:memSig(x), n:(x.skills||[]).length}; }
+    for(let i=1;i<=NUM_SLOTS;i++){ const x = data.members['slot'+i]; if(x && x.name) seenMap['slot'+i] = {sig:memSig(x), c:memCounts(x)}; }
     seenSave(); return '';
   }
   if(slot === mySlot()) return '';
   const s = seenMap[slot];
   if(!s) return '<span class="new-badge">nový</span>';
   if(s.sig === memSig(m)) return '';
-  const add = (m.skills||[]).length - s.n;
-  return '<span class="new-badge">' + (add>0 ? '+'+add : 'upraveno') + '</span>';
+  const now = memCounts(m), base = s.c || {skills:s.n};
+  const parts = [];
+  NEW_KINDS.forEach(([k,f])=>{ const d = now[k] - (base[k]===undefined ? now[k] : base[k]); if(d>0) parts.push('+'+d+' '+plCz(d,f)); });
+  if(!parts.length) return '';
+  return '<span class="new-badge">' + parts.slice(0,3).map(escapeHtml).join('<br>') + '</span>';
 }
 function renderDirectory(){
   const grid = document.getElementById('directoryGrid');
